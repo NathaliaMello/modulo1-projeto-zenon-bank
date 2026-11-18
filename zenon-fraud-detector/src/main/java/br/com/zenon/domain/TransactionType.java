@@ -1,6 +1,6 @@
 package br.com.zenon.domain;
 
-public enum TypeEnum {
+public enum TransactionType {
     CASH_IN,
     CASH_OUT,
     DEBIT,
