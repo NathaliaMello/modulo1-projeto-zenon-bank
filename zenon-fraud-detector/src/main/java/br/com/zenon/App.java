@@ -4,9 +4,9 @@ import br.com.zenon.domain.Transaction;
 import br.com.zenon.domain.TransactionCustomer;
 import br.com.zenon.domain.TransactionType;
 import br.com.zenon.ingest.TransactionIngestor;
+import br.com.zenon.vo.IngestionResult;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * Hello world!
@@ -15,6 +15,7 @@ import java.util.List;
 public class App {
 
     private static final String FILE_PATH = "data/PS_20174392719_1491204439457_log.csv";
+    private static final String BAD_DATA_FILE_PATH = "data/paysim_with_bad_data.csv";
 
     public static void main( String[] args ) {
 
@@ -24,16 +25,14 @@ public class App {
         Transaction transaction2 = getTransaction2();
         System.out.println("Transação 2: " + transaction2);
 
-
+        // TODO NTM - TAREFA/04: ESTUDAR BiConsumer PARA ENTENDER SE ENCAIXA BEM AQUI
         TransactionIngestor transactionIngestor = new TransactionIngestor();
-        List<Transaction> transactionCustomers = transactionIngestor.ingest(FILE_PATH);
-        if (transactionCustomers != null) {
-            for (int i = 0; i < 10; i ++) {
-                System.out.println(transactionCustomers.get(i));
-            }
-        } else {
-            throw new RuntimeException("Erro ao ingetar/ler transações");
-        }
+        IngestionResult ingestionResult = transactionIngestor.ingest(BAD_DATA_FILE_PATH);
+
+        ingestionResult.errors().forEach(System.err::println);
+        System.out.println(ingestionResult.transactions().size());
+        ingestionResult.transactions().forEach(System.out::println);
+
     }
 
     private static Transaction getTransaction1() {

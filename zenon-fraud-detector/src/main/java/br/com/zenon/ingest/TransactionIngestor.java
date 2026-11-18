@@ -3,10 +3,15 @@ package br.com.zenon.ingest;
 import br.com.zenon.domain.Transaction;
 import br.com.zenon.domain.TransactionCustomer;
 import br.com.zenon.domain.TransactionType;
+import br.com.zenon.vo.IngestionResult;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -14,18 +19,29 @@ public class TransactionIngestor {
 
     private static final int MAX_LINES = 1000;
     private static final int EXPECTED_COLUMNS = 11;
-    public List<Transaction> ingest(String filePath) {
+    public IngestionResult ingest(String filePath) {
 
-        Path path = Path.of(filePath);
-        try (Stream<String> lines = Files.lines(path)) {
-            return lines
-                    .skip(1)
-                    .limit(MAX_LINES)
-                    .map(this::parseLine)
-                    .toList();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        List<Transaction> transactions = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        try (BufferedReader reader = Files.newBufferedReader(Path.of(filePath))) {
+            reader.readLine();
+            String line;
+            int linesRead = 0;
+            while (linesRead < MAX_LINES && (line = reader.readLine()) != null) {
+                linesRead++;
+
+                try {
+                    transactions.add(parseLine(line));
+                } catch (IllegalArgumentException | NullPointerException e) {
+                    errors.add("Erro: " + line + " | " + e);
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Erro ao ler o arquivo: " + filePath, e);
         }
+
+        return new IngestionResult(transactions, errors);
     }
 
     private Transaction parseLine(String line) {
