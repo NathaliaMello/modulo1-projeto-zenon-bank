@@ -4,12 +4,14 @@ import br.com.zenon.domain.Transaction;
 import br.com.zenon.domain.TransactionCustomer;
 import br.com.zenon.domain.TransactionType;
 import br.com.zenon.ingest.TransactionIngestor;
+import br.com.zenon.repository.TransactionListRepository;
+import br.com.zenon.repository.TransactionMapRepository;
 import br.com.zenon.service.FraudAnalyzer;
 import br.com.zenon.vo.IngestionResult;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
+import java.util.*;
 
 /**
  * Hello world!
@@ -55,6 +57,33 @@ public class App {
         analyzer.countFraudsByTransactionType(transactions)
                 .forEach((type, count) ->
                         System.out.println("- " + type + ": " + count));
+
+        TransactionListRepository repository = new TransactionListRepository();
+        TransactionMapRepository repositoryMap = new TransactionMapRepository();
+        String client1 = "C1231006815";
+        String client2 = "C12345";
+        String client3 = "C1868032458";
+
+        repository.findTransactionByOriginCustomerName(client1)
+                .ifPresentOrElse(
+                        System.out::println,
+                        () -> System.out.println("Transação não encontrada para o cliente " + client1));
+
+        repository.findTransactionByOriginCustomerName(client2)
+                .ifPresentOrElse(
+                        System.out::println,
+                        () -> System.out.println("Transação não encontrada para o cliente " + client2));
+
+        long startList = System.nanoTime();
+        Optional<Transaction> resultList = repository.findTransactionByOriginCustomerName(client3);
+        long elapsedLList = System.nanoTime() - startList;
+        System.out.println("Tempo de busca: " + elapsedLList + " ns (" + elapsedLList / 1_000_000.0 + " ms)");
+
+        long startMap = System.nanoTime();
+        Optional<Transaction> resultMap = repositoryMap.findTransactionByOriginCustomerName(client3);
+        long elapsedMap = System.nanoTime() - startMap;
+        System.out.println("Tempo de busca: " + elapsedMap + " ns (" + elapsedMap / 1_000_000.0 + " ms)");
+
 
     }
 
