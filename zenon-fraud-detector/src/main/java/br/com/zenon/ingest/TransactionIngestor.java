@@ -16,9 +16,9 @@ import java.util.List;
 
 public class TransactionIngestor {
 
-    private static final int MAX_LINES = 1000;
+
     private static final int EXPECTED_COLUMNS = 11;
-    public IngestionResult ingest(String filePath) {
+    public IngestionResult ingest(String filePath, int maxLines) {
 
         List<Transaction> transactions = new ArrayList<>();
         List<String> errors = new ArrayList<>();
@@ -27,7 +27,7 @@ public class TransactionIngestor {
             reader.readLine();
             String line;
             int linesRead = 0;
-            while (linesRead < MAX_LINES && (line = reader.readLine()) != null) {
+            while (linesRead < maxLines && (line = reader.readLine()) != null) {
                 linesRead++;
 
                 try {

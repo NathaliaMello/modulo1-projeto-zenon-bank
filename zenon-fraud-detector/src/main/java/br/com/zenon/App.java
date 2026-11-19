@@ -4,9 +4,12 @@ import br.com.zenon.domain.Transaction;
 import br.com.zenon.domain.TransactionCustomer;
 import br.com.zenon.domain.TransactionType;
 import br.com.zenon.ingest.TransactionIngestor;
+import br.com.zenon.service.FraudAnalyzer;
 import br.com.zenon.vo.IngestionResult;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 
 /**
  * Hello world!
@@ -16,6 +19,7 @@ public class App {
 
     private static final String FILE_PATH = "data/PS_20174392719_1491204439457_log.csv";
     private static final String BAD_DATA_FILE_PATH = "data/paysim_with_bad_data.csv";
+    private static final int MAX_LINES = 50000;
 
     public static void main( String[] args ) {
 
@@ -27,11 +31,30 @@ public class App {
 
         // TODO NTM - TAREFA/04: ESTUDAR BiConsumer PARA ENTENDER SE ENCAIXA BEM AQUI
         TransactionIngestor transactionIngestor = new TransactionIngestor();
-        IngestionResult ingestionResult = transactionIngestor.ingest(BAD_DATA_FILE_PATH);
+        IngestionResult ingestionResult = transactionIngestor.ingest(FILE_PATH, MAX_LINES);
 
         ingestionResult.errors().forEach(System.err::println);
         System.out.println(ingestionResult.transactions().size());
         ingestionResult.transactions().forEach(System.out::println);
+
+        List<Transaction> transactions = ingestionResult.transactions();
+        FraudAnalyzer analyzer = new FraudAnalyzer();
+
+        System.out.println("1. Total de Frandes: " + analyzer.countFrauds(transactions));
+        System.out.println("2. Top 3 fraudes de maior valor: ");
+        analyzer.topThreeFraudAmounts(transactions)
+                .forEach(amount -> System.out.println(format(amount)));
+
+        System.out.println("3. Clientes suspeitos: ");
+        analyzer.topFiveFraudCustomers(transactions)
+                .forEach(System.out::println);
+
+        System.out.println("4. Prejuízo Total: " + format(analyzer.totalFraudAmount(transactions)));
+
+        System.out.println("5. Fraudes por Tipo: ");
+        analyzer.countFraudsByTransactionType(transactions)
+                .forEach((type, count) ->
+                        System.out.println("- " + type + ": " + count));
 
     }
 
@@ -76,6 +99,10 @@ public class App {
                 recipient2,
                 true,
                 false);
+    }
+
+    private static String format(BigDecimal value) {
+        return value.setScale(2, RoundingMode.HALF_UP).toString();
     }
 
 }
