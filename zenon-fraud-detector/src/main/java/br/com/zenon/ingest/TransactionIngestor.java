@@ -3,7 +3,7 @@ package br.com.zenon.ingest;
 import br.com.zenon.domain.Transaction;
 import br.com.zenon.domain.TransactionCustomer;
 import br.com.zenon.domain.TransactionType;
-import br.com.zenon.vo.IngestionResult;
+import br.com.zenon.dto.IngestionResult;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,6 +42,29 @@ public class TransactionIngestor {
 
         return new IngestionResult(transactions, errors);
     }
+
+    public IngestionResult ingest(String filePath) {
+
+        List<Transaction> transactions = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        try (BufferedReader reader = Files.newBufferedReader(Path.of(filePath))) {
+            String line = reader.readLine();
+            while (reader.readLine() != null) {
+                try {
+                    transactions.add(parseLine(line));
+                } catch (IllegalArgumentException | NullPointerException e) {
+                    errors.add("Erro: " + line + " | " + e);
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Erro ao ler o arquivo: " + filePath, e);
+        }
+
+        return new IngestionResult(transactions, errors);
+    }
+
+
 
     private Transaction parseLine(String line) {
         String[] col = line.split(",");

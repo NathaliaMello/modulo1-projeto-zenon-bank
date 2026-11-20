@@ -17,12 +17,9 @@ public record Transaction(
         if (step < 1) {
             throw new IllegalArgumentException("step should be positive: " + step);
         }
-
         Objects.requireNonNull(type, "type should not be null");
-
         if (null == amount || amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("amount should be positive: " + amount);
         }
-
     }
 }

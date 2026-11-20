@@ -7,7 +7,7 @@ import br.com.zenon.ingest.TransactionIngestor;
 import br.com.zenon.repository.TransactionListRepository;
 import br.com.zenon.repository.TransactionMapRepository;
 import br.com.zenon.service.FraudAnalyzer;
-import br.com.zenon.vo.IngestionResult;
+import br.com.zenon.dto.IngestionResult;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -33,7 +33,7 @@ public class App {
 
         // TODO NTM - TAREFA/04: ESTUDAR BiConsumer PARA ENTENDER SE ENCAIXA BEM AQUI
         TransactionIngestor transactionIngestor = new TransactionIngestor();
-        IngestionResult ingestionResult = transactionIngestor.ingest(FILE_PATH, MAX_LINES);
+        IngestionResult ingestionResult = transactionIngestor.ingest(FILE_PATH);
 
         ingestionResult.errors().forEach(System.err::println);
         System.out.println(ingestionResult.transactions().size());

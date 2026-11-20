@@ -1,4 +1,4 @@
-package br.com.zenon.vo;
+package br.com.zenon.dto;
 
 import br.com.zenon.domain.Transaction;
 
